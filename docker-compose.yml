@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: development
+    env_file:
+        - ./.env
+    volumes:
+      - .:/app
+    command: go run main.go
+    ports:
+      - 5000:5000
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:alpine
+    restart: always
+    environment:
+      POSTGRES_HOST: ${DATABASE_HOSTNAME}
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    ports:
+      - '5432:5432'
+    volumes:
+      - docker-go-postgres:/var/lib/postgresql/data
+    networks:
+      - docker-go-postgres
+
+volumes:
+  docker-go-postgres:
+    driver: local
+
+networks:
+  docker-go-postgres:
+    driver: bridge
